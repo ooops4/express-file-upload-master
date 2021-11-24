@@ -3,16 +3,14 @@ const fs = require("fs");
 const baseUrl = "http://localhost:8080/files/";
 const extract = require('extract-zip')
 const path = require("path");
-// const { spawn, exec } = require('child_process');
-const execFile = require('child_process').execFile;
+const { exec, execSync } = require('child_process');
 const AppData = 'AppData';
+const HtmlOutputDirectory = 'HTMLOutput';
 var pdfFolder = '';
 var pdfFilePath = '';
 var tempPdfFilePath = '';
 var conversionResult = '';
-
-
-
+var HtmlFileSaveDirectory = '';
 
 const upload = async (req, res) => {
   try {
@@ -27,13 +25,15 @@ const upload = async (req, res) => {
       var pdfPath = req.file.path;
       pdfFolder = req.body.docConvQueueId;
       pdfFilePath = path.join(__basedir, AppData, pdfFolder);
+      HtmlFileSaveDirectory = path.join(__basedir, HtmlOutputDirectory, pdfFolder);
+
 
       try {
         await extract(pdfPath, { dir: pdfFilePath })
         console.log('extraction completed');
         tempPdfFilePath = findFileByExt(pdfFilePath, 'pdf');
         console.log(tempPdfFilePath);
-        conversionResult = ConvertPdfToHtml(tempPdfFilePath)
+        conversionResult = ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder);
 
 
       } catch (err) {
@@ -41,7 +41,6 @@ const upload = async (req, res) => {
 
       }
     }
-
 
     res.status(200).send({
       message: "Uploaded the file successfully: " + req.file.originalname,
@@ -80,30 +79,11 @@ function findFileByExt(pdfFilePath, ext) {
   return result;
 }
 
-// function ConvertPdfToHtml(tempPdfFilePath) {
-//   console.log(tempPdfFilePath);
-//   // var child = spawn(`docker run -ti --rm -v E:/carbon/temp:/pdf pdf2htmlex/pdf2htmlex:0.18.8.rc1-master-20200630-Ubuntu-focal-x86_64 --zoom 1.5 "OceanTeam_2020_FF.pdf"`)
-//   var child = spawn(`dir`);
-//   // console.log('ConvertPdfToHtml executed and the path is = ' + child);
-//   child.on('exit', function (code, signal) {
-//     console.log('child process exited with ' +
-//                 `code ${code} and signal ${signal}`);
-//   });
-//   child.stdout.on('data', (data) => {
-//     console.log(`child stdout:\n${data}`);
-//   });
-
-//   child.stderr.on('data', (data) => {
-//     console.error(`child stderr:\n${data}`);
-//   });
-
-
-// }
-
-function ConvertPdfToHtml(tempPdfFilePath) {
+function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder) {
   console.log(tempPdfFilePath);
-  // var child = spawn(`docker run -ti --rm -v E:/carbon/temp:/pdf pdf2htmlex/pdf2htmlex:0.18.8.rc1-master-20200630-Ubuntu-focal-x86_64 --zoom 1.5 "OceanTeam_2020_FF.pdf"`)
-  var child = exec.exec(`dir`,
+  // debugger;
+  // var child = childProcess.exec('pdf2htmlEX',['--zoom', '1.5', `${tempPdfFilePath}`, `${pdfFilePath}/htmloutput.html`],
+  var child = exec(`pdf2htmlEX --zoom 1.5 -f 1 -l 2 ${tempPdfFilePath} /${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html`,
     function (error, stdout, stderr) {
       if (error) {
         console.log(error.stack);
@@ -114,33 +94,18 @@ function ConvertPdfToHtml(tempPdfFilePath) {
       console.log('stderr: ' + stderr);
     });
   child.on('exit', function (code) {
+    if (code == 0) {
+
+      console.log(HtmlFileSaveDirectory);
+      execSync(`zip -r htmloutput *`, {
+        cwd: HtmlFileSaveDirectory
+      });
+
+    } else {
+
+    }
     console.log('Child process exited with exit code ' + code);
   });
-}
-
-function ConvertPdfToHtml(tempPdfFilePath) {
-  debugger;
-  console.log(tempPdfFilePath);
-  // var child = spawn(`docker run -ti --rm -v E:/carbon/temp:/pdf pdf2htmlex/pdf2htmlex:0.18.8.rc1-master-20200630-Ubuntu-focal-x86_64 --zoom 1.5 "OceanTeam_2020_FF.pdf"`)
-  const child = execFile('node', ['--version'], (error, stdout, stderr) => {
-    if (error) {
-        console.error('stderr', stderr);
-        throw error;
-    }
-    console.log('stdout', stdout);
-});
-
-  // ls.stdout.on('data', (data) => {
-  //   console.log(`stdout: ${data}`);
-  // });
-
-  // ls.stderr.on('data', (data) => {
-  //   console.error(`stderr: ${data}`);
-  // });
-
-  // ls.on('close', (code) => {
-  //   console.log(`child process exited with code ${code}`);
-  // });
 }
 
 const getListFiles = (req, res) => {
@@ -168,9 +133,10 @@ const getListFiles = (req, res) => {
 
 const download = (req, res) => {
   const fileName = req.params.name;
-  const directoryPath = __basedir + "/resources/static/assets/uploads/";
-
-  res.download(directoryPath + fileName, fileName, (err) => {
+  const htmloutput = 'htmloutput.zip';
+  const directoryPath = path.join(__basedir, HtmlOutputDirectory, fileName, htmloutput);
+  console.log(directoryPath)
+  res.download(directoryPath, fileName, (err) => {
     if (err) {
       res.status(500).send({
         message: "Could not download the file. " + err,
