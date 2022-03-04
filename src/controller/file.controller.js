@@ -18,6 +18,7 @@ const apiPath = '/api/DocumentConversion/UpdateDocConvQueue';
 //const debugPort = '48947';
 const externalAPI = 'api.iriscarbon.com';
 var pdfFlags = '';
+const devuiURL = 'devui';
 
 const upload = async (req, res) => {
   try {
@@ -47,8 +48,11 @@ const upload = async (req, res) => {
         conversionResult = ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags);
         //conversionResult = true;
 
-        if (conversionResult) {
+        if (conversionResult && req.body.instance) {
           CallExternalAPIForUpdate(pdfFolder, req.body.instance);
+        }
+        else {
+          CallExternalAPIForUpdate(pdfFolder, null);
         }
 
       } catch (err) {
@@ -168,8 +172,15 @@ function CallExternalAPIForUpdate(queueId, instance) {
     'downloadpath' : queueId,
     'QueueId' : queueId
   });
-  instance = instance.toLowerCase();
-  instance += externalAPI;
+  if(instance){
+    instance = instance.toLowerCase();
+    instance += externalAPI;
+  }
+  else{
+    instance = devuiURL;
+  }
+
+  
   
   var options = {
     hostname: instance,
