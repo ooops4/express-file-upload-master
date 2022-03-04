@@ -1,6 +1,8 @@
 const uploadFile = require("../middleware/upload");
+const https = require('https');
+//const http = require('http');
 const fs = require("fs");
-const baseUrl = "http://localhost:8080/files/";
+const baseUrl = "http://localhost:3000/files/";
 const extract = require('extract-zip')
 const path = require("path");
 const { exec, execSync } = require('child_process');
@@ -11,6 +13,11 @@ var pdfFilePath = '';
 var tempPdfFilePath = '';
 var conversionResult = '';
 var HtmlFileSaveDirectory = '';
+const apiPath = '/api/DocumentConversion/UpdateDocConvQueue';
+//const debugApi = 'localhost';
+//const debugPort = '48947';
+const externalAPI = 'api.iriscarbon.com';
+var pdfFlags = '';
 
 const upload = async (req, res) => {
   try {
@@ -24,6 +31,7 @@ const upload = async (req, res) => {
       console.log(req.file.path);
       var pdfPath = req.file.path;
       pdfFolder = req.body.docConvQueueId;
+      pdfFlags = req.body.pdfFlags
       pdfFilePath = path.join(__basedir, AppData, pdfFolder);
       HtmlFileSaveDirectory = path.join(__basedir, HtmlOutputDirectory, pdfFolder);
 
@@ -33,8 +41,15 @@ const upload = async (req, res) => {
         console.log('extraction completed');
         tempPdfFilePath = findFileByExt(pdfFilePath, 'pdf');
         console.log(tempPdfFilePath);
-        conversionResult = ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder);
+        if (pdfFlags == undefined) {
+            pdfFlags = '--zoom 1.5 --tounicode 1 ';
+        } 
+        conversionResult = ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags);
+        //conversionResult = true;
 
+        if (conversionResult) {
+          CallExternalAPIForUpdate(pdfFolder, req.body.instance);
+        }
 
       } catch (err) {
         console.log(err)
@@ -79,11 +94,11 @@ function findFileByExt(pdfFilePath, ext) {
   return result;
 }
 
-function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder) {
+function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags) {
   console.log(tempPdfFilePath);
   // debugger;
   // var child = childProcess.exec('pdf2htmlEX',['--zoom', '1.5', `${tempPdfFilePath}`, `${pdfFilePath}/htmloutput.html`],
-  var child = exec(`pdf2htmlEX --zoom 1.5 -f 1 -l 2 ${tempPdfFilePath} /${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html`,
+  var child = exec(`pdf2htmlEX ${pdfFlags} ${tempPdfFilePath} /${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html`,
     function (error, stdout, stderr) {
       if (error) {
         console.log(error.stack);
@@ -100,6 +115,7 @@ function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder) {
       execSync(`zip -r htmloutput *`, {
         cwd: HtmlFileSaveDirectory
       });
+      return true;
 
     } else {
 
@@ -127,6 +143,7 @@ const getListFiles = (req, res) => {
       });
     });
 
+
     res.status(200).send(fileInfos);
   });
 };
@@ -144,6 +161,43 @@ const download = (req, res) => {
     }
   });
 };
+
+function CallExternalAPIForUpdate(queueId, instance) {
+
+  var postData = JSON.stringify({
+    'downloadpath' : queueId,
+    'QueueId' : queueId
+  });
+  instance = instance.toLowerCase();
+  instance += externalAPI;
+  
+  var options = {
+    hostname: instance,
+    port: 443,
+    path: '/api/DocumentConversion/UpdateDocConvQueue',
+    method: 'POST',
+    headers: {
+         'Content-Type': 'application/json',
+         'Content-Length': postData.length
+       }
+  };
+  //return;
+  var req = http.request(options, (res) => {
+    console.log('statusCode:', res.statusCode);
+    console.log('headers:', res.headers);
+  
+    res.on('data', (d) => {
+      process.stdout.write(d);
+    });
+  });
+  
+  req.on('error', (e) => {
+    console.error(e);
+  });
+  
+  req.write(postData);
+  req.end();
+}
 
 module.exports = {
   upload,

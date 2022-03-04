@@ -14,6 +14,7 @@ let storage =
 
       pdfFolder = req.body.docConvQueueId;
       zipFileName = file.originalname;
+      instance = req.body.instance;
       console.log(pdfFolder);
 
       if (!fs.existsSync(path.join(__basedir, AppData))) {
