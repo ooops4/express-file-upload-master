@@ -32,7 +32,8 @@ const upload = async (req, res) => {
       console.log(req.file.path);
       var pdfPath = req.file.path;
       pdfFolder = req.body.docConvQueueId;
-      pdfFlags = req.body.pdfFlags
+      pdfFlags = req.body.pdfFlags;
+      var instance = req.body.instance;
       pdfFilePath = path.join(__basedir, AppData, pdfFolder);
       HtmlFileSaveDirectory = path.join(__basedir, HtmlOutputDirectory, pdfFolder);
 
@@ -48,9 +49,9 @@ const upload = async (req, res) => {
         conversionResult = ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, req.body.instance);
         //conversionResult = true;
 
-        if (conversionResult && req.body.instance) {
+        if (conversionResult && instance) {
           console.log('with Instance called' + instance);
-          CallExternalAPIForUpdate(pdfFolder, req.body.instance);
+          CallExternalAPIForUpdate(pdfFolder, instance);
         }
         else {
           console.log('without Instance called');
@@ -179,7 +180,7 @@ console.log('External API call initiated');
     instance += externalAPI;
   }
   else{
-    instance = devuiURL;
+    instance = devuiURL + externalAPI;
   }
 
   
