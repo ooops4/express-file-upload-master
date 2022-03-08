@@ -45,18 +45,20 @@ const upload = async (req, res) => {
         if (pdfFlags == undefined) {
             pdfFlags = '--zoom 1.5 --tounicode 1 ';
         } 
-        conversionResult = ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags);
+        conversionResult = ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, req.body.instance);
         //conversionResult = true;
 
         if (conversionResult && req.body.instance) {
+          console.log('with Instance called' + instance);
           CallExternalAPIForUpdate(pdfFolder, req.body.instance);
         }
         else {
+          console.log('without Instance called');
           CallExternalAPIForUpdate(pdfFolder, null);
         }
 
       } catch (err) {
-        console.log(err)
+        console.log('Error : ' + err)
 
       }
     }
@@ -98,7 +100,7 @@ function findFileByExt(pdfFilePath, ext) {
   return result;
 }
 
-function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags) {
+function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance) {
   console.log(tempPdfFilePath);
   // debugger;
   // var child = childProcess.exec('pdf2htmlEX',['--zoom', '1.5', `${tempPdfFilePath}`, `${pdfFilePath}/htmloutput.html`],
@@ -114,7 +116,7 @@ function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdf
     });
   child.on('exit', function (code) {
     if (code == 0) {
-
+      console.log('Conversion Completed and Child process exited with code: ' + code);
       console.log(HtmlFileSaveDirectory);
       execSync(`zip -r htmloutput *`, {
         cwd: HtmlFileSaveDirectory
@@ -167,7 +169,7 @@ const download = (req, res) => {
 };
 
 function CallExternalAPIForUpdate(queueId, instance) {
-
+console.log('External API call initiated');
   var postData = JSON.stringify({
     'downloadpath' : queueId,
     'QueueId' : queueId
@@ -194,15 +196,17 @@ function CallExternalAPIForUpdate(queueId, instance) {
   };
   //return;
   var req = http.request(options, (res) => {
-    console.log('statusCode:', res.statusCode);
-    console.log('headers:', res.headers);
+    console.log('External API Ended and Status Code :' + res.statusCode);
+    //console.log('headers:', res.headers);
   
     res.on('data', (d) => {
+      console.log('External API Ended and on Data :' + d);
       process.stdout.write(d);
     });
   });
   
   req.on('error', (e) => {
+    console.log('External API Called and ERROR : ' + e);
     console.error(e);
   });
   
