@@ -195,7 +195,7 @@ console.log('External API call initiated');
        }
   };
   //return;
-  var req = http.request(options, (res) => {
+  var req = https.request(options, (res) => {
     console.log('External API Ended and Status Code :' + res.statusCode);
     //console.log('headers:', res.headers);
   
