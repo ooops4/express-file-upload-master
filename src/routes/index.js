@@ -1,6 +1,6 @@
-const express = require("express");
-const router = express.Router();
-const controller = require("../controller/file.controller");
+import { Router } from "express";
+const router = Router();
+import controller from "../controller/file.controller";
 
 let routes = (app) => {
   router.post("/upload", controller.upload);
@@ -10,4 +10,4 @@ let routes = (app) => {
   app.use(router);
 };
 
-module.exports = routes;
+export default routes;

@@ -1,7 +1,7 @@
-const util = require("util");
-const multer = require("multer");
-const fs = require("fs");
-const path = require("path");
+import { promisify } from "util";
+import multer, { diskStorage } from "multer";
+import { existsSync, mkdirSync } from "fs";
+import { join } from "path";
 const maxSize = 2 * 1024 * 1024 * 1024;
 let pdfFolder = "";
 const AppData = "AppData";
@@ -9,7 +9,7 @@ const HtmlOutputDirectory = "HTMLOutput";
 
 
 let storage =
-  multer.diskStorage({
+  diskStorage({
     destination: (req, file, cb) => {
 
       pdfFolder = req.body.docConvQueueId;
@@ -17,25 +17,25 @@ let storage =
       instance = req.body.instance;
       console.log(pdfFolder);
 
-      if (!fs.existsSync(path.join(__basedir, AppData))) {
-        fs.mkdirSync(path.join(__basedir, AppData));
+      if (!existsSync(join(__basedir, AppData))) {
+        mkdirSync(join(__basedir, AppData));
       }
 
-      if (!fs.existsSync(path.join(__basedir, HtmlOutputDirectory))) {
-        fs.mkdirSync(path.join(__basedir, HtmlOutputDirectory));
+      if (!existsSync(join(__basedir, HtmlOutputDirectory))) {
+        mkdirSync(join(__basedir, HtmlOutputDirectory));
         // fs.chmodSync(path.join(__basedir, HtmlOutputDirectory), 0777);
       }
 
-      if (!fs.existsSync(path.join(__basedir, AppData, pdfFolder))) {
-        fs.mkdirSync(path.join(__basedir, AppData, pdfFolder));
+      if (!existsSync(join(__basedir, AppData, pdfFolder))) {
+        mkdirSync(join(__basedir, AppData, pdfFolder));
       }
 
-      if (!fs.existsSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder))) {
-        fs.mkdirSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder));
+      if (!existsSync(join(__basedir, HtmlOutputDirectory, pdfFolder))) {
+        mkdirSync(join(__basedir, HtmlOutputDirectory, pdfFolder));
         // fs.chmodSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder), 0777);;
       }
 
-      cb(null, path.join(__basedir, AppData, pdfFolder));
+      cb(null, join(__basedir, AppData, pdfFolder));
     },
     filename: (req, file, cb) => {
       console.log(file.originalname);
@@ -48,5 +48,5 @@ let uploadFile = multer({
   limits: { fileSize: maxSize },
 }).single("file");
 
-let uploadFileMiddleware = util.promisify(uploadFile);
-module.exports = uploadFileMiddleware;
+let uploadFileMiddleware = promisify(uploadFile);
+export default uploadFileMiddleware;
