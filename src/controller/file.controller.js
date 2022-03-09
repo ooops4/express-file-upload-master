@@ -126,7 +126,7 @@ function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdf
         if (code == 0) {
           console.log('Zipping successfull and Child process exited with code: ' + code);
           console.log(HtmlFileSaveDirectory);
-          CallExternalAPIForUpdate(HtmlFileSaveDirectory, instance);
+          CallExternalAPIForUpdate(pdfFolder, instance);
         }
       });
     } else {
