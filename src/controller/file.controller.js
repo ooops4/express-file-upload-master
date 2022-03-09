@@ -5,7 +5,7 @@ const fs = require("fs");
 const baseUrl = "http://localhost:3000/files/";
 const extract = require('extract-zip')
 const path = require("path");
-const { exec, execSync } = require('child_process');
+const { exec, execSync, ChildProcess } = require('child_process');
 const AppData = 'AppData';
 const HtmlOutputDirectory = 'HTMLOutput';
 var pdfFolder = '';
@@ -44,19 +44,10 @@ const upload = async (req, res) => {
         tempPdfFilePath = findFileByExt(pdfFilePath, 'pdf');
         console.log(tempPdfFilePath);
         if (pdfFlags == undefined) {
-            pdfFlags = '--zoom 1.5 --tounicode 1 ';
-        } 
-        conversionResult = ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, req.body.instance);
+          pdfFlags = '--zoom 1.5 --tounicode 1 ';
+        }
+        conversionResult = ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance);
         //conversionResult = true;
-
-        if (conversionResult && instance) {
-          console.log('with Instance called' + instance);
-          CallExternalAPIForUpdate(pdfFolder, instance);
-        }
-        else {
-          console.log('without Instance called');
-          CallExternalAPIForUpdate(pdfFolder, null);
-        }
 
       } catch (err) {
         console.log('Error : ' + err)
@@ -106,6 +97,7 @@ function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdf
   // debugger;
   // var child = childProcess.exec('pdf2htmlEX',['--zoom', '1.5', `${tempPdfFilePath}`, `${pdfFilePath}/htmloutput.html`],
   var child = exec(`pdf2htmlEX ${pdfFlags} ${tempPdfFilePath} /${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html`,
+  // var child = exec(`dir`,
     function (error, stdout, stderr) {
       if (error) {
         console.log(error.stack);
@@ -119,11 +111,23 @@ function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdf
     if (code == 0) {
       console.log('Conversion Completed and Child process exited with code: ' + code);
       console.log(HtmlFileSaveDirectory);
-      execSync(`zip -r htmloutput *`, {
-        cwd: HtmlFileSaveDirectory
-      });
-      return true;
+      // var makeAZipFileTest = exec(`zip -r htmloutput *`, { cwd: HtmlFileSaveDirectory }, function (error, stdout, stderr) {
 
+      var makeAZipFileTest = exec(`zip -r htmloutput *`, { cwd: HtmlFileSaveDirectory }, function (error, stdout, stderr) {
+        if (error) {
+          console.log(error.stack);
+          console.log('Error code: ' + error.code);
+          console.log('Signal received: ' + error.signal);
+        }
+        console.log('stdout: ' + stdout);
+        console.log('stderr: ' + stderr);
+      });
+      makeAZipFileTest.on('exit', function (code) {
+        if (code == 0) {
+          console.log('Zipping successfull and Child process exited with code: ' + code);
+          console.log(HtmlFileSaveDirectory);
+        }
+      });
     } else {
 
     }
@@ -170,47 +174,47 @@ const download = (req, res) => {
 };
 
 function CallExternalAPIForUpdate(queueId, instance) {
-console.log('External API call initiated');
+  console.log('External API call initiated');
   var postData = JSON.stringify({
-    'downloadpath' : queueId,
-    'QueueId' : queueId
+    'downloadpath': queueId,
+    'QueueId': queueId
   });
-  if(instance){
+  if (instance) {
     instance = instance.toLowerCase();
     instance += externalAPI;
   }
-  else{
+  else {
     instance = devuiURL + externalAPI;
   }
 
-  
-  
+
+
   var options = {
     hostname: instance,
     port: 443,
     path: '/api/DocumentConversion/UpdateDocConvQueue',
     method: 'POST',
     headers: {
-         'Content-Type': 'application/json',
-         'Content-Length': postData.length
-       }
+      'Content-Type': 'application/json',
+      'Content-Length': postData.length
+    }
   };
   //return;
   var req = https.request(options, (res) => {
     console.log('External API Ended and Status Code :' + res.statusCode);
     //console.log('headers:', res.headers);
-  
+
     res.on('data', (d) => {
       console.log('External API Ended and on Data :' + d);
       process.stdout.write(d);
     });
   });
-  
+
   req.on('error', (e) => {
     console.log('External API Called and ERROR : ' + e);
     console.error(e);
   });
-  
+
   req.write(postData);
   req.end();
 }
