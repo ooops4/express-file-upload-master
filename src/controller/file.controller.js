@@ -119,8 +119,8 @@ function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdf
           console.log('Error code: ' + error.code);
           console.log('Signal received: ' + error.signal);
         }
-        console.log('stdout: ' + stdout);
-        console.log('stderr: ' + stderr);
+        // console.log('stdout: ' + stdout);
+        // console.log('stderr: ' + stderr);
       });
       makeAZipFileTest.on('exit', function (code) {
         if (code == 0) {
@@ -206,8 +206,8 @@ function CallExternalAPIForUpdate(queueId, instance) {
     //console.log('headers:', res.headers);
 
     res.on('data', (d) => {
-      console.log('External API Ended and on Data :' + d);
-      process.stdout.write(d);
+      //console.log('External API Ended and on Data :' + d);
+      //process.stdout.write(d);
     });
   });
 
