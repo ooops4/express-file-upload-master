@@ -1,11 +1,11 @@
-import uploadFile from "../middleware/upload";
-import { request } from 'https';
+const uploadFile = require("../middleware/upload");
+const https = require('https');
 //const http = require('http');
-import { readdirSync, statSync, readdir } from "fs";
+const fs = require("fs");
 const baseUrl = "http://localhost:3000/files/";
-import extract from 'extract-zip';
-import { join } from "path";
-import { exec, execSync, ChildProcess } from 'child_process';
+const extract = require('extract-zip')
+const path = require("path");
+const { exec, execSync, ChildProcess } = require('child_process');
 const AppData = 'AppData';
 const HtmlOutputDirectory = 'HTMLOutput';
 var pdfFolder = '';
@@ -34,8 +34,8 @@ const upload = async (req, res) => {
       pdfFolder = req.body.docConvQueueId;
       pdfFlags = req.body.pdfFlags;
       var instance = req.body.instance;
-      pdfFilePath = join(__basedir, AppData, pdfFolder);
-      HtmlFileSaveDirectory = join(__basedir, HtmlOutputDirectory, pdfFolder);
+      pdfFilePath = path.join(__basedir, AppData, pdfFolder);
+      HtmlFileSaveDirectory = path.join(__basedir, HtmlOutputDirectory, pdfFolder);
 
 
       try {
@@ -74,14 +74,14 @@ const upload = async (req, res) => {
 };
 
 function findFileByExt(pdfFilePath, ext) {
-  var files = readdirSync(pdfFilePath);
+  var files = fs.readdirSync(pdfFilePath);
   var result = '';
 
   files.forEach(
     function (file) {
-      var newbase = join(pdfFilePath, file);
-      if (statSync(newbase).isDirectory()) {
-        result = findFileByExt(newbase, ext, readdirSync(newbase), result);
+      var newbase = path.join(pdfFilePath, file);
+      if (fs.statSync(newbase).isDirectory()) {
+        result = findFileByExt(newbase, ext, fs.readdirSync(newbase), result);
       } else {
         if (file.substr(-1 * (ext.length + 1)) == '.' + ext) {
           result = newbase;
@@ -139,7 +139,7 @@ function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdf
 const getListFiles = (req, res) => {
   const directoryPath = __basedir + "/resources/static/assets/uploads/";
 
-  readdir(directoryPath, function (err, files) {
+  fs.readdir(directoryPath, function (err, files) {
     if (err) {
       res.status(500).send({
         message: "Unable to scan files!",
@@ -163,7 +163,7 @@ const getListFiles = (req, res) => {
 const download = (req, res) => {
   const fileName = req.params.name;
   const htmloutput = 'htmloutput.zip';
-  const directoryPath = join(__basedir, HtmlOutputDirectory, fileName, htmloutput);
+  const directoryPath = path.join(__basedir, HtmlOutputDirectory, fileName, htmloutput);
   console.log(directoryPath)
   res.download(directoryPath, fileName, (err) => {
     if (err) {
@@ -201,7 +201,7 @@ function CallExternalAPIForUpdate(queueId, instance) {
     }
   };
   //return;
-  var req = request(options, (res) => {
+  var req = https.request(options, (res) => {
     console.log('External API Ended and Status Code :' + res.statusCode);
     //console.log('headers:', res.headers);
 
@@ -220,7 +220,7 @@ function CallExternalAPIForUpdate(queueId, instance) {
   req.end();
 }
 
-export default {
+module.exports = {
   upload,
   getListFiles,
   download,

@@ -1,5 +1,5 @@
-import cors from "cors";
-import express, { urlencoded } from "express";
+const cors = require("cors");
+const express = require("express");
 const app = express();
 
 global.__basedir = __dirname;
@@ -10,9 +10,9 @@ var corsOptions = {
 
 app.use(cors(corsOptions));
 
-import initRoutes from "./src/routes";
+const initRoutes = require("./src/routes");
 
-app.use(urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 initRoutes(app);
 
 let port = 3000;
