@@ -5,7 +5,7 @@ const fs = require("fs");
 const baseUrl = "http://localhost:3000/files/";
 const extract = require('extract-zip')
 const path = require("path");
-const { exec, execSync, ChildProcess } = require('child_process');
+const { exec } = require('child_process');
 const AppData = 'AppData';
 const HtmlOutputDirectory = 'HTMLOutput';
 var pdfFolder = '';
@@ -93,7 +93,7 @@ function findFileByExt(pdfFilePath, ext) {
 }
 
 function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance) {
-  console.log(tempPdfFilePath);
+  //console.log(tempPdfFilePath);
   // debugger;
   // var child = childProcess.exec('pdf2htmlEX',['--zoom', '1.5', `${tempPdfFilePath}`, `${pdfFilePath}/htmloutput.html`],
   var child = exec(`pdf2htmlEX ${pdfFlags} ${tempPdfFilePath} /${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html`,
@@ -104,13 +104,13 @@ function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdf
         console.log('Error code: ' + error.code);
         console.log('Signal received: ' + error.signal);
       }
-      console.log('stdout: ' + stdout);
-      console.log('stderr: ' + stderr);
+      //console.log('stdout: ' + stdout);
+      //console.log('stderr: ' + stderr);
     });
   child.on('exit', function (code) {
     if (code == 0) {
       console.log('Conversion Completed and Child process exited with code: ' + code);
-      console.log(HtmlFileSaveDirectory);
+      //console.log(HtmlFileSaveDirectory);
       // var makeAZipFileTest = exec(`zip -r htmloutput *`, { cwd: HtmlFileSaveDirectory }, function (error, stdout, stderr) {
 
       var makeAZipFileTest = exec(`zip -r htmloutput *`, { cwd: HtmlFileSaveDirectory }, function (error, stdout, stderr) {
@@ -125,7 +125,7 @@ function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdf
       makeAZipFileTest.on('exit', function (code) {
         if (code == 0) {
           console.log('Zipping successfull and Child process exited with code: ' + code);
-          console.log(HtmlFileSaveDirectory);
+          //console.log(HtmlFileSaveDirectory);
           CallExternalAPIForUpdate(pdfFolder, instance);
         }
       });
@@ -136,29 +136,29 @@ function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdf
   });
 }
 
-const getListFiles = (req, res) => {
-  const directoryPath = __basedir + "/resources/static/assets/uploads/";
+// const getListFiles = (req, res) => {
+//   const directoryPath = __basedir + "/resources/static/assets/uploads/";
 
-  fs.readdir(directoryPath, function (err, files) {
-    if (err) {
-      res.status(500).send({
-        message: "Unable to scan files!",
-      });
-    }
+//   fs.readdir(directoryPath, function (err, files) {
+//     if (err) {
+//       res.status(500).send({
+//         message: "Unable to scan files!",
+//       });
+//     }
 
-    let fileInfos = [];
+//     let fileInfos = [];
 
-    files.forEach((file) => {
-      fileInfos.push({
-        name: file,
-        url: baseUrl + file,
-      });
-    });
+//     files.forEach((file) => {
+//       fileInfos.push({
+//         name: file,
+//         url: baseUrl + file,
+//       });
+//     });
 
 
-    res.status(200).send(fileInfos);
-  });
-};
+//     res.status(200).send(fileInfos);
+//   });
+// };
 
 const download = (req, res) => {
   const fileName = req.params.name;
@@ -222,6 +222,6 @@ function CallExternalAPIForUpdate(queueId, instance) {
 
 module.exports = {
   upload,
-  getListFiles,
+  //getListFiles,
   download,
 };
