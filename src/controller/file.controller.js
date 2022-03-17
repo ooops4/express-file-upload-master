@@ -136,29 +136,29 @@ function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdf
   });
 }
 
-// const getListFiles = (req, res) => {
-//   const directoryPath = __basedir + "/resources/static/assets/uploads/";
+const getListFiles = (req, res) => {
+  const directoryPath = __basedir + "/resources/static/assets/uploads/";
 
-//   fs.readdir(directoryPath, function (err, files) {
-//     if (err) {
-//       res.status(500).send({
-//         message: "Unable to scan files!",
-//       });
-//     }
+  fs.readdir(directoryPath, function (err, files) {
+    if (err) {
+      res.status(500).send({
+        message: "Unable to scan files!",
+      });
+    }
 
-//     let fileInfos = [];
+    let fileInfos = [];
 
-//     files.forEach((file) => {
-//       fileInfos.push({
-//         name: file,
-//         url: baseUrl + file,
-//       });
-//     });
+    files.forEach((file) => {
+      fileInfos.push({
+        name: file,
+        url: baseUrl + file,
+      });
+    });
 
 
-//     res.status(200).send(fileInfos);
-//   });
-// };
+    res.status(200).send(fileInfos);
+  });
+};
 
 const download = (req, res) => {
   const fileName = req.params.name;
@@ -222,6 +222,6 @@ function CallExternalAPIForUpdate(queueId, instance) {
 
 module.exports = {
   upload,
-  //getListFiles,
+  getListFiles,
   download,
 };
