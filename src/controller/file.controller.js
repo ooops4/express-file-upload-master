@@ -96,7 +96,7 @@ function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdf
   //console.log(tempPdfFilePath);
   // debugger;
   // var child = childProcess.exec('pdf2htmlEX',['--zoom', '1.5', `${tempPdfFilePath}`, `${pdfFilePath}/htmloutput.html`],
-  var child = exec(`pdf2htmlEX ${pdfFlags} ${tempPdfFilePath} /${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html`,
+  var child = exec(`pdf2htmlEX ${pdfFlags} /"${tempPdfFilePath}/"  /"/${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html/"`,
   // var child = exec(`dir`,
     function (error, stdout, stderr) {
       if (error) {
