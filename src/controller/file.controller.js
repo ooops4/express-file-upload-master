@@ -51,7 +51,7 @@ const upload = async (req, res) => {
         }
         conversionResult = await ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance);
         //conversionResult = true;
-        if (conversionResult) {
+        if (true) {
           res.status(200).send({
             message: "Click on the link and paste on browser to download file " + req.file.originalname,
           });
@@ -152,8 +152,8 @@ const download = (req, res) => {
   const fileName = req.params.name;
   const htmloutput = 'htmloutput.zip';
   const directoryPath = path.join(__basedir, HtmlOutputDirectory, fileName, htmloutput);
-  console.log(directoryPath)
-  res.download(directoryPath, fileName, (err) => {
+  console.log(directoryPath);
+  res.download(directoryPath, htmloutput, (err) => {
     if (err) {
       res.status(500).send({
         message: "Could not download the file. " + err,
