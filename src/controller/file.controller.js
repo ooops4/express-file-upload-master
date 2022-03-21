@@ -2,10 +2,13 @@ const uploadFile = require("../middleware/upload");
 const https = require('https');
 //const http = require('http');
 const fs = require("fs");
+const util = require('util');
 const baseUrl = "http://localhost:3000/files/";
 const extract = require('extract-zip')
 const path = require("path");
-const { exec } = require('child_process');
+const { ChildProcess } = require("child_process");
+const { stderr, stdout } = require("process");
+const exec = util.promisify(require('child_process').exec);
 const AppData = 'AppData';
 const HtmlOutputDirectory = 'HTMLOutput';
 var pdfFolder = '';
@@ -24,7 +27,6 @@ const upload = async (req, res) => {
   try {
     await uploadFile(req, res);
 
-
     if (req.file == undefined) {
       return res.status(400).send({ message: "Please upload a file!" });
     }
@@ -39,15 +41,21 @@ const upload = async (req, res) => {
 
 
       try {
-        await extract(pdfPath, { dir: pdfFilePath })
+        const extractZip = await extract(pdfPath, { dir: pdfFilePath })
+        //debugger;
         console.log('extraction completed');
-        tempPdfFilePath = findFileByExt(pdfFilePath, 'pdf');
+        tempPdfFilePath = await findFileByExt(pdfFilePath, 'pdf');
         console.log(tempPdfFilePath);
         if (pdfFlags == undefined) {
           pdfFlags = '--zoom 1.5 --tounicode 1 ';
         }
-        conversionResult = ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance);
+        conversionResult = await ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance);
         //conversionResult = true;
+        if (conversionResult) {
+          res.status(200).send({
+            message: "Click on the link and paste on browser to download file " + req.file.originalname,
+          });
+        }
 
       } catch (err) {
         console.log('Error : ' + err)
@@ -55,9 +63,9 @@ const upload = async (req, res) => {
       }
     }
 
-    res.status(200).send({
-      message: "Uploaded the file successfully: " + req.file.originalname,
-    });
+    // res.status(200).send({
+    //   message: "Uploaded the file successfully: " + req.file.originalname,
+    // });
   } catch (err) {
     console.log(err);
 
@@ -73,7 +81,7 @@ const upload = async (req, res) => {
   }
 };
 
-function findFileByExt(pdfFilePath, ext) {
+async function findFileByExt(pdfFilePath, ext) {
   var files = fs.readdirSync(pdfFilePath);
   var result = '';
 
@@ -92,48 +100,28 @@ function findFileByExt(pdfFilePath, ext) {
   return result;
 }
 
-function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance) {
-  //console.log(tempPdfFilePath);
-  // debugger;
-  // var child = childProcess.exec('pdf2htmlEX',['--zoom', '1.5', `${tempPdfFilePath}`, `${pdfFilePath}/htmloutput.html`],
-  var child = exec(`pdf2htmlEX ${pdfFlags} "${tempPdfFilePath}"  "/${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html"`,
-  // var child = exec(`dir`,
-    function (error, stdout, stderr) {
-      if (error) {
-        console.log(error.stack);
-        console.log('Error code: ' + error.code);
-        console.log('Signal received: ' + error.signal);
-      }
-      //console.log('stdout: ' + stdout);
-      //console.log('stderr: ' + stderr);
-    });
-  child.on('exit', function (code) {
-    if (code == 0) {
-      console.log('Conversion Completed and Child process exited with code: ' + code);
-      //console.log(HtmlFileSaveDirectory);
-      // var makeAZipFileTest = exec(`zip -r htmloutput *`, { cwd: HtmlFileSaveDirectory }, function (error, stdout, stderr) {
-
-      var makeAZipFileTest = exec(`zip -r htmloutput *`, { cwd: HtmlFileSaveDirectory }, function (error, stdout, stderr) {
-        if (error) {
-          console.log(error.stack);
-          console.log('Error code: ' + error.code);
-          console.log('Signal received: ' + error.signal);
-        }
-        // console.log('stdout: ' + stdout);
-        // console.log('stderr: ' + stderr);
-      });
-      makeAZipFileTest.on('exit', function (code) {
-        if (code == 0) {
-          console.log('Zipping successfull and Child process exited with code: ' + code);
-          //console.log(HtmlFileSaveDirectory);
+async function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance) {
+  try {
+    var { stdout, stderr } = await exec(`pdf2htmlEX ${pdfFlags} "${tempPdfFilePath}"  "/${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html"`);
+    console.log('stdout:', stdout);
+    console.error('stderr:', stderr);
+    if (stdout) {
+      var { stdout, stderr } = await exec(`zip -r htmloutput *`, { cwd: HtmlFileSaveDirectory });
+      if (stdout) {
+        if (instance != null && instance != undefined) {
           CallExternalAPIForUpdate(pdfFolder, instance);
         }
-      });
+      } else {
+        //DO NOTHING
+      }
     } else {
-
+      //do nothing
     }
-    console.log('Child process exited with exit code ' + code);
-  });
+  } catch (error) {
+    console.log('Error is : ' + error);
+  }
+
+
 }
 
 const getListFiles = (req, res) => {
@@ -187,8 +175,6 @@ function CallExternalAPIForUpdate(queueId, instance) {
   else {
     instance = devuiURL + externalAPI;
   }
-
-
 
   var options = {
     hostname: instance,
