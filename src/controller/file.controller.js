@@ -168,7 +168,8 @@ function CallExternalAPIForUpdate(queueId, instance) {
   console.log('External API call initiated');
   var postData = JSON.stringify({
     'downloadpath': queueId,
-    'QueueId': queueId
+    'QueueId': queueId,
+    'IsPicked' : false
   });
   if (instance) {
     instance = instance.toLowerCase();
