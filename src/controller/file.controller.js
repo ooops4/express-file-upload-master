@@ -10,35 +10,18 @@ const exec = util.promisify(require('child_process').exec);
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 const AppData = 'AppData';
 const HtmlOutputDirectory = 'HTMLOutput';
-var generationId = '';
-var xbrlFolderPath = '';
-var xbrlFilePath = '';
+var pdfFolder = '';
+var pdfFilePath = '';
+var tempPdfFilePath = '';
 var conversionResult = '';
-var taxonomyId = '';
 var HtmlFileSaveDirectory = '';
-var logFile = '';
-const logFileName = 'Error.xml';
 const apiPath = '/api/DocumentConversion/UpdateDocConvQueue';
 //const debugApi = 'localhost';
 //const debugPort = '48947';
 const externalAPI = 'api.iriscarbon.com';
-var generationFlags = '';
+var pdfFlags = '';
 const devuiURL = 'devui';
 const downloadUrl = 'https://nodepdfapi.iriscarbon.com/files/';
-const arelleLocation = 'ArellePath';
-const validationParameter = '--plugins "xule" --xule-rule-set';
-const taxonomyDirectory = "Directory with all taxonomy folder";
-// const taxonomyZipPath = 'ValidationZipPath';
-// const validationZipPath = 'ValidationZipPath';
-// const renderingZipPath = '';
-const validationZipFile = 'V.zip';
-const taxonomyZipFile = 'T.zip';
-const renderingZipFile = 'R.zip';
-var validationZipPath = '';
-var renderingZipPath = '';
-var taxonomyZipPath = '';
-
-
 
 const upload = async (req, res) => {
   try {
@@ -50,37 +33,27 @@ const upload = async (req, res) => {
     if (req.file.path != undefined && req.file.path != null) {
       console.log(req.file.path);
       var pdfPath = req.file.path;
-      generationId = req.body.generationFlag;
-      generationFlags = req.body.pdfFlags;
+      pdfFolder = req.body.docConvQueueId;
+      pdfFlags = req.body.pdfFlags;
       var instance = req.body.instance;
-      taxonomyId = req.body.taxonomyId;
-      xbrlFolderPath = path.join(__basedir, AppData, generationId);
-      // HtmlFileSaveDirectory = path.join(__basedir, HtmlOutputDirectory, generationFlag);
-      logFile = path.join(xbrlFolderPath,logFileName);
+      pdfFilePath = path.join(__basedir, AppData, pdfFolder);
+      HtmlFileSaveDirectory = path.join(__basedir, HtmlOutputDirectory, pdfFolder);
 
 
       try {
-        const extractZip = await extract(pdfPath, { dir: xbrlFolderPath })
+        const extractZip = await extract(pdfPath, { dir: pdfFilePath })
+        //debugger;
         console.log('extraction completed');
-        xbrlFilePath = await findFileByExt(xbrlFolderPath, 'xbrl');
-        console.log(xbrlFilePath);
-        validationZipPath = path.join(taxonomyDirectory, taxonomyId, validationZipFile);
-        taxonomyZipPath = path.join(taxonomyDirectory, taxonomyId, taxonomyZipFile);
-        // arelle location
-        // --plugins "xule" --xule-rule-set 
-        // "/home/pdfadmin/arelleFiles/V.zip" 
-        // -f "/home/pdfadmin/xbrlsamples/testduke/testduke.xbrl" 
-        // -v 
-        // --logFile "/home/pdfadmin/xbrlsamples/testduke/Error.xml" 
-        //below others
-        // --packages "/home/pdfadmin/arelleFiles/m32u94u409m432/T.zip"
-        // --packages "/home/pdfadmin/arelleFiles/m32u94u409m432/V.zip"
-        // --packages "/home/pdfadmin/arelleFiles/m32u94u409m432/R.zip"
-        conversionResult = await RunArelle(arelleLocation, validationParameter, validationZipPath, xbrlFilePath, logFile, taxonomyZipPath, generationId, generationFlags, instance);
+        tempPdfFilePath = await findFileByExt(pdfFilePath, 'pdf');
+        console.log(tempPdfFilePath);
+        if (pdfFlags == undefined) {
+          pdfFlags = '--zoom 1.5 --tounicode 1 ';
+        }
+        conversionResult = await ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance);
         //conversionResult = true;
         if (true) {
           res.status(200).send({
-            message: `Click on the link below or copy and paste on browser to download the file \n  ${downloadUrl}${generationId}`,
+            message: `Click on the link below or copy and paste on browser to download the file \n  ${downloadUrl}${pdfFolder}`,
           });
         }
 
@@ -109,7 +82,6 @@ const upload = async (req, res) => {
   }
 };
 
-
 async function findFileByExt(pdfFilePath, ext) {
   var files = fs.readdirSync(pdfFilePath);
   var result = '';
@@ -130,25 +102,17 @@ async function findFileByExt(pdfFilePath, ext) {
 }
 
 
-// RunArelle(tempPdfFilePath, null, generationId, generationFlags, instance);
-async function RunArelle(arelleLocation, validationParameter, validationZipPath, xbrlFilePath, logFile, taxonomyZipPath,) {
+async function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance) {
   try {
     // var { stdout, stderr } = await exec(`pdf2htmlEX ${pdfFlags} "${tempPdfFilePath}"  "/${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html"`);
-    
-        // arelle location
-        // --plugins "xule" --xule-rule-set 
-        // "/home/pdfadmin/arelleFiles/V.zip" 
-        // -f "/home/pdfadmin/xbrlsamples/testduke/testduke.xbrl" 
-        // -v 
-        // --logFile "/home/pdfadmin/xbrlsamples/testduke/Error.xml" 
-        //below others
-        // --packages "/home/pdfadmin/arelleFiles/m32u94u409m432/T.zip"
-    var { stdout, stderr } = await exec(`"${arelleLocation}" "${validationParameter}" "${validationZipPath}" -f "${xbrlFilePath}"  -v --logFile "${logFile}" --packages "${taxonomyZipPath}"`);
+    var { stdout, stderr } = await exec(`pdf2htmlEX ${pdfFlags} "${tempPdfFilePath}"  "/${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html"`);
     console.log('stdout:', stdout);
     console.error('stderr:', stderr);
     
-      
-      await delay(2000);
+      // setTimeout(() => {
+      // exec(`zip -r htmloutput *`, { cwd: HtmlFileSaveDirectory });
+      // }, 2000);
+      await delay(5000);
       exec(`zip -r htmloutput *`, { cwd: HtmlFileSaveDirectory });
 
       

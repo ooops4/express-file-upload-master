@@ -3,39 +3,39 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const maxSize = 2 * 1024 * 1024 * 1024;
-let generationId = "";
+let pdfFolder = "";
 const AppData = "AppData";
-const XBRLOutputDirectory = "HTMLOutput";
+const HtmlOutputDirectory = "HTMLOutput";
 
 
 let storage =
   multer.diskStorage({
     destination: (req, file, cb) => {
 
-      generationId = req.body.docConvQueueId;
+      pdfFolder = req.body.docConvQueueId;
       zipFileName = file.originalname;
-      // instance = req.body.instance;
-      console.log(generationId);
+      instance = req.body.instance;
+      console.log(pdfFolder);
 
       if (!fs.existsSync(path.join(__basedir, AppData))) {
         fs.mkdirSync(path.join(__basedir, AppData));
       }
 
-      if (!fs.existsSync(path.join(__basedir, XBRLOutputDirectory))) {
-        fs.mkdirSync(path.join(__basedir, XBRLOutputDirectory));
+      if (!fs.existsSync(path.join(__basedir, HtmlOutputDirectory))) {
+        fs.mkdirSync(path.join(__basedir, HtmlOutputDirectory));
         // fs.chmodSync(path.join(__basedir, HtmlOutputDirectory), 0777);
       }
 
-      if (!fs.existsSync(path.join(__basedir, AppData, generationId))) {
-        fs.mkdirSync(path.join(__basedir, AppData, generationId));
+      if (!fs.existsSync(path.join(__basedir, AppData, pdfFolder))) {
+        fs.mkdirSync(path.join(__basedir, AppData, pdfFolder));
       }
 
-      if (!fs.existsSync(path.join(__basedir, XBRLOutputDirectory, generationId))) {
-        fs.mkdirSync(path.join(__basedir, XBRLOutputDirectory, generationId));
+      if (!fs.existsSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder))) {
+        fs.mkdirSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder));
         // fs.chmodSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder), 0777);;
       }
 
-      cb(null, path.join(__basedir, AppData, generationId));
+      cb(null, path.join(__basedir, AppData, pdfFolder));
     },
     filename: (req, file, cb) => {
       console.log(file.originalname);
