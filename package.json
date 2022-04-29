@@ -1,7 +1,7 @@
 {
-  "name": "node-js-express-upload-download-files",
+  "name": "nodejs-arelle-validation-renderer",
   "version": "1.0.0",
-  "description": "Node.js Express Rest APIs to Upload/Download Files",
+  "description": "Node.js Express Rest APIs to validate FERC XBRL files and Render to generate HTML file.",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,8 +16,8 @@
     "express",
     "multer"
   ],
-  "author": "bezkoder",
-  "license": "ISC",
+  "author": "Bikram Prasad",
+  "license": "NA",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
