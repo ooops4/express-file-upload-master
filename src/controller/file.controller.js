@@ -47,7 +47,7 @@ const upload = async (req, res) => {
         tempPdfFilePath = await findFileByExt(pdfFilePath, 'pdf');
         console.log(tempPdfFilePath);
         if (pdfFlags == undefined) {
-          pdfFlags = '--zoom 1.5 --tounicode 1 ';
+          pdfFlags = '--zoom 1.5 --tounicode 1 --no-drm 1';
         }
         conversionResult = await ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance);
         //conversionResult = true;
