@@ -107,7 +107,7 @@ async function findFileByExt(pdfFilePath, ext) {
 async function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance) {
   try {
     // var { stdout, stderr } = await exec(`pdf2htmlEX ${pdfFlags} "${tempPdfFilePath}"  "/${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html"`);
-    var { stdout, stderr } = await exec(`pdf2htmlEX ${pdfFlags} "${tempPdfFilePath}"  "/${HtmlFileSaveDirectory}/${pdfFolder}/${pdfFolder}.html"`);
+    var { stdout, stderr } = await exec(`pdf2htmlEX ${pdfFlags} "${tempPdfFilePath}"  "${HtmlFileSaveDirectory}/${pdfFolder}/${pdfFolder}.html"`);
     console.log('stdout:', stdout);
     console.error('stderr:', stderr);
     
