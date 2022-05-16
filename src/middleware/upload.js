@@ -3,9 +3,10 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const maxSize = 2 * 1024 * 1024 * 1024;
-let pdfFolder = "";
-const AppData = "AppData";
-const HtmlOutputDirectory = "HTMLOutput";
+const DataDrive = 'pdfdata';
+let pdfFolder = '';
+const AppData = 'AppData';
+const HtmlOutputDirectory = 'HTMLOutput';
 
 
 let storage =
@@ -17,25 +18,25 @@ let storage =
       instance = req.body.instance;
       console.log(pdfFolder);
 
-      if (!fs.existsSync(path.join(__basedir, AppData))) {
-        fs.mkdirSync(path.join(__basedir, AppData));
+      if (!fs.existsSync(path.join(DataDrive, AppData))) {
+        fs.mkdirSync(path.join(DataDrive, AppData));
       }
 
-      if (!fs.existsSync(path.join(__basedir, HtmlOutputDirectory))) {
-        fs.mkdirSync(path.join(__basedir, HtmlOutputDirectory));
-        // fs.chmodSync(path.join(__basedir, HtmlOutputDirectory), 0777);
+      if (!fs.existsSync(path.join(DataDrive, HtmlOutputDirectory))) {
+        fs.mkdirSync(path.join(DataDrive, HtmlOutputDirectory));
+        // fs.chmodSync(path.join(DataDrive, HtmlOutputDirectory), 0777);
       }
 
-      if (!fs.existsSync(path.join(__basedir, AppData, pdfFolder))) {
-        fs.mkdirSync(path.join(__basedir, AppData, pdfFolder));
+      if (!fs.existsSync(path.join(DataDrive, AppData, pdfFolder))) {
+        fs.mkdirSync(path.join(DataDrive, AppData, pdfFolder));
       }
 
-      if (!fs.existsSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder))) {
-        fs.mkdirSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder));
-        // fs.chmodSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder), 0777);;
+      if (!fs.existsSync(path.join(DataDrive, HtmlOutputDirectory, pdfFolder))) {
+        fs.mkdirSync(path.join(DataDrive, HtmlOutputDirectory, pdfFolder));
+        // fs.chmodSync(path.join(DataDrive, HtmlOutputDirectory, pdfFolder), 0777);;
       }
 
-      cb(null, path.join(__basedir, AppData, pdfFolder));
+      cb(null, path.join(DataDrive, AppData, pdfFolder));
     },
     filename: (req, file, cb) => {
       console.log(file.originalname);

@@ -7,7 +7,8 @@ const baseUrl = "http://localhost:3000/files/";
 const extract = require('extract-zip')
 const path = require("path");
 const exec = util.promisify(require('child_process').exec);
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+const DataDrive = 'pdfdata';
 const AppData = 'AppData';
 const HtmlOutputDirectory = 'HTMLOutput';
 var pdfFolder = '';
@@ -36,8 +37,8 @@ const upload = async (req, res) => {
       pdfFolder = req.body.docConvQueueId;
       pdfFlags = req.body.pdfFlags;
       var instance = req.body.instance;
-      pdfFilePath = path.join(__basedir, AppData, pdfFolder);
-      HtmlFileSaveDirectory = path.join(__basedir, HtmlOutputDirectory, pdfFolder);
+      pdfFilePath = path.join(DataDrive, AppData, pdfFolder);
+      HtmlFileSaveDirectory = path.join(DataDrive, HtmlOutputDirectory, pdfFolder);
 
 
       try {
@@ -126,34 +127,10 @@ async function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolde
 
 }
 
-const getListFiles = (req, res) => {
-  const directoryPath = __basedir + "/resources/static/assets/uploads/";
-
-  fs.readdir(directoryPath, function (err, files) {
-    if (err) {
-      res.status(500).send({
-        message: "Unable to scan files!",
-      });
-    }
-
-    let fileInfos = [];
-
-    files.forEach((file) => {
-      fileInfos.push({
-        name: file,
-        url: baseUrl + file,
-      });
-    });
-
-
-    res.status(200).send(fileInfos);
-  });
-};
-
 const download = (req, res) => {
   const fileName = req.params.name;
   const htmloutput = 'htmloutput.zip';
-  const directoryPath = path.join(__basedir, HtmlOutputDirectory, fileName, htmloutput);
+  const directoryPath = path.join(DataDrive, HtmlOutputDirectory, fileName, htmloutput);
   console.log(directoryPath);
   res.download(directoryPath, htmloutput, (err) => {
     if (err) {
