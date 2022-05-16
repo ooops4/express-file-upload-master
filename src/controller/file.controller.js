@@ -110,13 +110,21 @@ async function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolde
     console.log('stdout:', stdout);
     console.error('stderr:', stderr);
     
-      // setTimeout(() => {
+    console.log('conversion finished');
+          // setTimeout(() => {
       // exec(`zip -r htmloutput *`, { cwd: HtmlFileSaveDirectory });
       // }, 2000);
       await delay(5000);
+    
+    console.log('HTML File path is :' + HtmlFileSaveDirectory);
+    console.log('zipping start');
+    try {
       exec(`zip -r htmloutput *`, { cwd: HtmlFileSaveDirectory });
+    } catch (error) {
+      console.log('Zipping Error is : ' + error);
+    }
 
-      
+      console.log('zipping finished');
       if (instance != null && instance != undefined) {
           CallExternalAPIForUpdate(pdfFolder, instance);
         }
