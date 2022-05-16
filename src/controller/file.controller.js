@@ -38,7 +38,7 @@ const upload = async (req, res) => {
       pdfFlags = req.body.pdfFlags;
       var instance = req.body.instance;
       pdfFilePath = path.join(__basedir, AppData, pdfFolder);
-      HtmlFileSaveDirectory = path.join('../../'+HtmlOutputDirectory, pdfFolder);
+      HtmlFileSaveDirectory = path.join(__basedir,HtmlOutputDirectory, pdfFolder);
       console.log('HTMLFileSaveDirectory is : '+ HtmlFileSaveDirectory);
 
 
