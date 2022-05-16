@@ -131,6 +131,7 @@ async function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolde
         }
   } catch (error) {
     console.log('Error is : ' + error);
+    console.log('ERROR IS : ' + stderr);
   }
 
 
