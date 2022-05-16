@@ -24,7 +24,7 @@ let storage =
 
       if (!fs.existsSync(path.join(__basedir, HtmlOutputDirectory))) {
         fs.mkdirSync(path.join(__basedir, HtmlOutputDirectory));
-        fs.chmodSync(path.join(__basedir, HtmlOutputDirectory), 0777);
+        // fs.chmodSync(path.join(__basedir, HtmlOutputDirectory), 0777);
       }
 
       if (!fs.existsSync(path.join(__basedir, AppData, pdfFolder))) {
@@ -33,7 +33,7 @@ let storage =
 
       if (!fs.existsSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder))) {
         fs.mkdirSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder));
-        fs.chmodSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder), 0777);;
+        // fs.chmodSync(path.join(__basedir, HtmlOutputDirectory, pdfFolder), 0777);
       }
 
       cb(null, path.join(__basedir, AppData, pdfFolder));
