@@ -189,6 +189,6 @@ function CallExternalAPIForUpdate(queueId, instance) {
 
 module.exports = {
   upload,
-  getListFiles,
+  // getListFiles,
   download,
 };
