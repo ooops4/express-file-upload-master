@@ -34,7 +34,7 @@ let storage =
 
       if (!fs.existsSync(path.join(DataDrive, HtmlOutputDirectory, pdfFolder))) {
         fs.mkdirSync(path.join(DataDrive, HtmlOutputDirectory, pdfFolder));
-        // fs.chmodSync(path.join(DataDrive, HtmlOutputDirectory, pdfFolder), 0777);
+        fs.chmodSync(path.join(DataDrive, HtmlOutputDirectory, pdfFolder), 0777);
       }
 
       cb(null, path.join(DataDrive, AppData, pdfFolder));
