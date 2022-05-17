@@ -8,7 +8,7 @@ const extract = require('extract-zip')
 const path = require("path");
 const exec = util.promisify(require('child_process').exec);
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-const __basedir = '/pdfdata';
+const DataDrive = '/pdfdata';
 const AppData = 'AppData';
 const HtmlOutputDirectory = 'HTMLOutput';
 var pdfFolder = '';
@@ -37,8 +37,8 @@ const upload = async (req, res) => {
       pdfFolder = req.body.docConvQueueId;
       pdfFlags = req.body.pdfFlags;
       var instance = req.body.instance;
-      pdfFilePath = path.join(__basedir, AppData, pdfFolder);
-      HtmlFileSaveDirectory = path.join(__basedir,HtmlOutputDirectory, pdfFolder);
+      pdfFilePath = path.join(DataDrive, AppData, pdfFolder);
+      HtmlFileSaveDirectory = path.join(DataDrive,HtmlOutputDirectory, pdfFolder);
       console.log('HTMLFileSaveDirectory is : '+ HtmlFileSaveDirectory);
 
 
@@ -108,7 +108,7 @@ async function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolde
   try {
     // var { stdout, stderr } = await exec(`pdf2htmlEX ${pdfFlags} "${tempPdfFilePath}"  "/${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html"`);
     console.log('Conversion Started');
-    var { stdout, stderr } = await exec(`pdf2htmlEX ${pdfFlags} "${tempPdfFilePath}" "/${HtmlOutputDirectory}/${pdfFolder}/${pdfFolder}.html"`);
+    var { stdout, stderr } = await exec(`pdf2htmlEX ${pdfFlags} "${tempPdfFilePath}" "${HtmlFileSaveDirectory}/${pdfFolder}.html"`);
     console.log('stdout:', stdout);
     console.log('stderr:', stderr);
     
@@ -140,7 +140,7 @@ async function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolde
 const download = (req, res) => {
   const fileName = req.params.name;
   const htmloutput = 'htmloutput.zip';
-  const directoryPath = path.join(__basedir, HtmlOutputDirectory, fileName, htmloutput);
+  const directoryPath = path.join(DataDrive, HtmlOutputDirectory, fileName, htmloutput);
   console.log(directoryPath);
   res.download(directoryPath, htmloutput, (err) => {
     if (err) {
