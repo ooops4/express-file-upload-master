@@ -24,17 +24,17 @@ let storage =
 
       if (!fs.existsSync(path.join(DataDrive, HtmlOutputDirectory))) {
         fs.mkdirSync(path.join(DataDrive, HtmlOutputDirectory));
-        fs.chmodSync(path.join(DataDrive, HtmlOutputDirectory), 0777);
+        // fs.chmodSync(path.join(DataDrive, HtmlOutputDirectory), 0777);
       }
 
       if (!fs.existsSync(path.join(DataDrive, AppData, pdfFolder))) {
         fs.mkdirSync(path.join(DataDrive, AppData, pdfFolder));
-        fs.chmodSync(path.join(DataDrive, AppData, pdfFolder), 0777);
+        // fs.chmodSync(path.join(DataDrive, AppData, pdfFolder), 0777);
       }
 
       if (!fs.existsSync(path.join(DataDrive, HtmlOutputDirectory, pdfFolder))) {
         fs.mkdirSync(path.join(DataDrive, HtmlOutputDirectory, pdfFolder));
-        fs.chmodSync(path.join(DataDrive, HtmlOutputDirectory, pdfFolder), 0777);
+        // fs.chmodSync(path.join(DataDrive, HtmlOutputDirectory, pdfFolder), 0777);
       }
 
       cb(null, path.join(DataDrive, AppData, pdfFolder));
