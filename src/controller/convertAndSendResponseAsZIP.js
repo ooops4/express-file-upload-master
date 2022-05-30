@@ -7,7 +7,7 @@ const extract = require('extract-zip')
 const path = require("path");
 const exec = util.promisify(require('child_process').exec);
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-const DataDrive = '/pdfdata';
+const DataDrive = 'pdfdata';
 const AppData = 'AppData';
 const HtmlOutputDirectory = 'HTMLOutput';
 var pdfFolder = '';
@@ -31,7 +31,7 @@ const convertAndSendResponseAsZIP = async (req, res) => {
       pdfFlags = req.body.pdfFlags;
       var instance = req.body.instance;
       pdfFilePath = path.join(DataDrive, AppData, pdfFolder);
-      HtmlFileSaveDirectory = path.join(DataDrive, HtmlOutputDirectory, pdfFolder);
+      HtmlFileSaveDirectory = path.join("../../../../"+DataDrive, HtmlOutputDirectory, pdfFolder);
       // htmlfilepath = path.join(DataDrive,HtmlOutputDirectory,pdfFolder,pdfFolder+".html")
 
       console.log('HTMLFileSaveDirectory is : ' + HtmlFileSaveDirectory);
