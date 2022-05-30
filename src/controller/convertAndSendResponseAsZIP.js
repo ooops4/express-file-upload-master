@@ -1,10 +1,8 @@
 const uploadFile = require("../middleware/upload");
 const https = require('https');
-//const http = require('http');
 const fs = require("fs");
 var AdmZip = require('adm-zip');
 const util = require('util');
-const baseUrl = "http://localhost:3000/files/";
 const extract = require('extract-zip')
 const path = require("path");
 const exec = util.promisify(require('child_process').exec);
@@ -17,13 +15,7 @@ var pdfFilePath = '';
 var tempPdfFilePath = '';
 var conversionResult = '';
 var HtmlFileSaveDirectory = '';
-const apiPath = '/api/DocumentConversion/UpdateDocConvQueue';
-//const debugApi = 'localhost';
-//const debugPort = '48947';
-const externalAPI = 'api.iriscarbon.com';
 var pdfFlags = '';
-const devuiURL = 'devui';
-const downloadUrl = 'https://nodepdfapi.iriscarbon.com/files/';
 
 const convertAndSendResponseAsZIP = async (req, res) => {
   try {
@@ -40,6 +32,8 @@ const convertAndSendResponseAsZIP = async (req, res) => {
       var instance = req.body.instance;
       pdfFilePath = path.join(DataDrive, AppData, pdfFolder);
       HtmlFileSaveDirectory = path.join("../../../../" + DataDrive, HtmlOutputDirectory, pdfFolder);
+      // htmlfilepath = path.join(DataDrive,HtmlOutputDirectory,pdfFolder,pdfFolder+".html")
+      
       console.log('HTMLFileSaveDirectory is : ' + HtmlFileSaveDirectory);
 
 
@@ -55,16 +49,21 @@ const convertAndSendResponseAsZIP = async (req, res) => {
         conversionResult = await ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance);
         //conversionResult = true;
         if (conversionResult) {
-          var zip = new AdmZip();
-          zip.addLocalFile(HtmlFileSaveDirectory);
-          var zipFileContents = zip.toBuffer();
-          const fileName = 'output.zip';
-          const fileType = 'application/zip';
-          res.writeHead(200, {
-            'Content-Disposition': `attachment; filename="${fileName}"`,
-            'Content-Type': fileType,
-          })
-          res.end(zipFileContents);
+          try {
+            var zip = new AdmZip();
+            var absolutepath = path.join(HtmlFileSaveDirectory,pdfFolder+".html");
+            zip.addLocalFile(absolutepath);
+            var zipFileContents = zip.toBuffer();
+            const fileName = 'output.zip';
+            const fileType = 'application/zip';
+            res.writeHead(200, {
+              'Content-Disposition': `attachment; filename="${fileName}"`,
+              'Content-Type': fileType,
+            })
+            res.end(zipFileContents);
+          } catch (error) {
+             console.log('ErrorAttachingZIP : ' + err);
+          }
         }
       } catch (err) {
         console.log('Error : ' + err);
@@ -140,66 +139,6 @@ async function ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolde
 
 
 }
-
-// const download = (req, res) => {
-//   const fileName = req.params.name;
-//   const htmloutput = 'htmloutput.zip';
-//   const directoryPath = path.join(DataDrive, HtmlOutputDirectory, fileName, htmloutput);
-//   console.log(directoryPath);
-//   res.download(directoryPath, htmloutput, (err) => {
-//     if (err) {
-//       res.status(500).send({
-//         message: "Could not download the file. " + err,
-//       });
-//     }
-//   });
-// };
-
-// function CallExternalAPIForUpdate(queueId, instance) {
-//   console.log('External API call initiated');
-//   var postData = JSON.stringify({
-//     'downloadpath': queueId,
-//     'QueueId': queueId,
-//     'IsPicked': false
-//   });
-//   if (instance) {
-//     instance = instance.toLowerCase();
-//     instance += externalAPI;
-//   }
-//   else {
-//     instance = devuiURL + externalAPI;
-//   }
-
-//   var options = {
-//     hostname: instance,
-//     port: 443,
-//     path: apiPath,
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Content-Length': postData.length
-//     }
-//   };
-//   //return;
-//   var req = https.request(options, (res) => {
-//     console.log('External API Ended and Status Code :' + res.statusCode);
-//     console.log('Instance  :' + options.hostname);
-//     //console.log('headers:', res.headers);
-
-//     res.on('data', (d) => {
-//       //console.log('External API Ended and on Data :' + d);
-//       //process.stdout.write(d);
-//     });
-//   });
-
-//   req.on('error', (e) => {
-//     console.log('External API Called and ERROR : ' + e);
-//     console.error(e);
-//   });
-
-//   req.write(postData);
-//   req.end();
-// }
 
 module.exports = {
   convertAndSendResponseAsZIP,
