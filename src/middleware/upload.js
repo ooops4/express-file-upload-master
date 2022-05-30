@@ -38,6 +38,7 @@ let storage =
       }
 
       cb(null, path.join(DataDrive, AppData, pdfFolder));
+      console.log('cb file path of AppData is :' + path.join(DataDrive, AppData, pdfFolder));
     },
     filename: (req, file, cb) => {
       console.log(file.originalname);

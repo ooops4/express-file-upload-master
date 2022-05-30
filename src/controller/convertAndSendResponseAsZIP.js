@@ -7,7 +7,7 @@ const extract = require('extract-zip')
 const path = require("path");
 const exec = util.promisify(require('child_process').exec);
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-const DataDrive = 'pdfdata';
+const DataDrive = '/pdfdata';
 const AppData = 'AppData';
 const HtmlOutputDirectory = 'HTMLOutput';
 var pdfFolder = '';
@@ -20,12 +20,12 @@ var pdfFlags = '';
 const convertAndSendResponseAsZIP = async (req, res) => {
   try {
     await uploadFile(req, res);
-
+    console.log('file save finished');
     if (req.file == undefined) {
       return res.status(400).send({ message: "Please upload a file!" });
     }
     if (req.file.path != undefined && req.file.path != null) {
-      console.log(req.file.path);
+      console.log('req.file.path:' +req.file.path);
       var pdfPath = req.file.path;
       pdfFolder = req.body.docConvQueueId;
       pdfFlags = req.body.pdfFlags;
@@ -33,25 +33,28 @@ const convertAndSendResponseAsZIP = async (req, res) => {
       pdfFilePath = path.join(DataDrive, AppData, pdfFolder);
       HtmlFileSaveDirectory = path.join(DataDrive, HtmlOutputDirectory, pdfFolder);
       // htmlfilepath = path.join(DataDrive,HtmlOutputDirectory,pdfFolder,pdfFolder+".html")
-      
+
       console.log('HTMLFileSaveDirectory is : ' + HtmlFileSaveDirectory);
 
 
       try {
         try {
-        const extractZip = await extract(pdfPath, { dir: pdfFilePath })
-          
+          console.log('pdfFilePath is ' + pdfFilePath);
+          await extract(pdfPath, { dir: pdfFilePath })
+
         } catch (error) {
-          console.log('ExtractZIP:' +error);
+          console.log('ExtractZIP:' + error);
+          return res.status(400).send({ message: `Error in extracting zip \n Error is ${error}`});
         }
         //debugger;
         console.log('extraction completed');
         try {
-          tempPdfFilePath = await findFileByExt(pdfFilePath, 'pdf'); 
+          tempPdfFilePath = await findFileByExt(pdfFilePath, 'pdf');
         } catch (error) {
-          console.log('findFileByExt:' +error);
+          console.log('findFileByExt:' + error);
+          return res.status(400).send({ message: `Error in finding PDF file \n Error is ${error}`});
         }
-       
+
         console.log(tempPdfFilePath);
         if (pdfFlags == undefined) {
           pdfFlags = '--zoom 1.5 --tounicode 1 --no-drm 1';
@@ -62,7 +65,7 @@ const convertAndSendResponseAsZIP = async (req, res) => {
         if (conversionResult) {
           try {
             var zip = new AdmZip();
-            var absolutepath = path.join(HtmlFileSaveDirectory,pdfFolder+".html");
+            var absolutepath = path.join(HtmlFileSaveDirectory, pdfFolder + ".html");
             zip.addLocalFile(absolutepath);
             var zipFileContents = zip.toBuffer();
             const fileName = 'output.zip';
@@ -73,7 +76,7 @@ const convertAndSendResponseAsZIP = async (req, res) => {
             })
             res.end(zipFileContents);
           } catch (error) {
-             console.log('ErrorAttachingZIP : ' + err);
+            console.log('ErrorAttachingZIP : ' + err);
           }
         }
       } catch (err) {
