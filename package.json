@@ -19,6 +19,7 @@
   "author": "bezkoder",
   "license": "ISC",
   "dependencies": {
+    "adm-zip": "^0.5.9",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "extract-zip": "^2.0.1",
