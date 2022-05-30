@@ -7,7 +7,7 @@ const extract = require('extract-zip')
 const path = require("path");
 const exec = util.promisify(require('child_process').exec);
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-const DataDrive = 'pdfdata';
+const DataDrive = '/pdfdata';
 const AppData = 'AppData';
 const HtmlOutputDirectory = 'HTMLOutput';
 var pdfFolder = '';
