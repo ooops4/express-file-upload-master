@@ -38,14 +38,25 @@ const convertAndSendResponseAsZIP = async (req, res) => {
 
 
       try {
+        try {
         const extractZip = await extract(pdfPath, { dir: pdfFilePath })
+          
+        } catch (error) {
+          console.log('ExtractZIP:' +error);
+        }
         //debugger;
         console.log('extraction completed');
-        tempPdfFilePath = await findFileByExt(pdfFilePath, 'pdf');
+        try {
+          tempPdfFilePath = await findFileByExt(pdfFilePath, 'pdf'); 
+        } catch (error) {
+          console.log('findFileByExt:' +error);
+        }
+       
         console.log(tempPdfFilePath);
         if (pdfFlags == undefined) {
           pdfFlags = '--zoom 1.5 --tounicode 1 --no-drm 1';
         }
+        console.log('conversion starting');
         conversionResult = await ConvertPdfToHtml(tempPdfFilePath, HtmlFileSaveDirectory, pdfFolder, pdfFlags, instance);
         //conversionResult = true;
         if (conversionResult) {
